@@ -7,8 +7,6 @@
 void printUsage();
 int receiver_main(listenIp, listenPort, filename);
 bool sendSummaryMessage(SOCKET socket);
-void printResult(const SummaryMessage* summary);
-int HandleData(void* pArgs);
-bool checkCrc16();
-bool checkCrc32();
-bool checkChecksum();
+void printResult(const ResultMessage* Res);
+int HandleData(void* pArgs, const ResultMessage* Res);
+

@@ -10,13 +10,13 @@ typedef unsigned char bit;
 typedef unsigned char byte;
 typedef unsigned long long ulong;
 
-typedef struct SummaryMessage
+typedef struct ResultMessage
 {
 	int received;
 	Result crc16;
 	Result crc32;
 	Result checksum;
-} SummaryMessage;
+} ResultMessage;
 
 //shared help functions:
 int getBytesNum(int bitsNum);

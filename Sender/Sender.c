@@ -4,7 +4,7 @@
 static SOCKET socket_server;
 static FILE* inputFile;
 
-void printSummary(const SummaryMessage* summary)
+void printSummary(const ResultMessage* summary)
 {
 	fprintf(stderr, "received:\t%d bytes\n", summary->received);
 	//TODO:fix it with crc
@@ -12,9 +12,9 @@ void printSummary(const SummaryMessage* summary)
 	//fprintf(stderr, "corrected:\t%d errors\n", summary->corrected);
 }
 
-bool getSummaryMessage(SummaryMessage* summary)
+bool getSummaryMessage( ResultMessage*summary)
 {
-	if (Receive((char*)summary, sizeof(SummaryMessage), socket_server) != SUCCES)
+	if (Receive((char*)summary, sizeof(ResultMessage), socket_server) != SUCCES)
 	{
 		printf("cant receive summary message\n");
 		return FALSE;
@@ -25,7 +25,7 @@ bool getSummaryMessage(SummaryMessage* summary)
 
 int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 {
-	SummaryMessage summary;
+	ResultMessage summary;
 	if (InitializeClientSocket(&socket_server, remoteIp, remotePort) != TRUE)
 	{
 		printf("Failed to connect sender to channel\n");
@@ -42,7 +42,7 @@ int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 	//TODO: calc CRC  and checksun add it to the end of file
 	// TODO:ssending data to channel
 
-	//finish, xlosing and waiting for reciever
+	//finish, closing and waiting for reciever
 	printf("Finished sending data\n");
 	if (shutdown(socket_server, SD_SEND) != 0)
 	{
@@ -54,7 +54,7 @@ int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 	}
 
 	// finished transmitting data, wait for summary message
-	if (readSummaryMessage(&summary) == TRUE)
+	if (getSummaryMessage(&summary) == TRUE)
 	{
 		printSummary(&summary);
 	}

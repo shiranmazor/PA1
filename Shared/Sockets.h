@@ -23,6 +23,5 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 //int InitServerSocketSimple(SocketServer* server, Ip listeningAddress, Port listeningPort);
 void CleanupServerSocket();
 
-bool SendInt(int value, SOCKET* s);
 
 #endif
