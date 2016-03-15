@@ -1,12 +1,12 @@
 #include "Receiver.h"
 
-static ResultMessage summary;
+static ResultMessage ResultData;
 static FILE* outputFile;
 static SOCKET socketServer;
 
 bool sendSummaryMessage(SOCKET socket)
 {
-	Result result = Send((const char*)&summary, sizeof(ResultMessage), socket);
+	Result result = Send((const char*)&ResultData, sizeof(ResultMessage), socket);
 	// send summary message
 	if (result != SUCCES)
 	{
@@ -22,7 +22,7 @@ bool sendSummaryMessage(SOCKET socket)
 	return TRUE;
 }
 
-int receiver_main(listenIp, listenPort, filename)
+int receiverMain(listenIp, listenPort, filename)
 {
 	//creating output file
 	outputFile = fopen(filename, "wb");
@@ -47,9 +47,8 @@ int receiver_main(listenIp, listenPort, filename)
 	summary.checksum = 0;
 	*/
 	
-
 	//get file data and check errors and print sammary:
-	res = HandleData((void*)&socketServer);
+	res = HandleData((void*)&socketServer, &ResultData);
 	// end of reciver task - cleanup reciever:
 
 	closesocket(socketServer);
