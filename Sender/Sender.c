@@ -45,7 +45,7 @@ bool sendingFileData()
 		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 
 		//here we will create the crc codes on fileBuff:
-
+		//Todo:liad
 		//sending file buffer:
 		if (Send(socket_server, (const char*)fileBuff, CHUNK_SIZE) == FALSE)
 		{

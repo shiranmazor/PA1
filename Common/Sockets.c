@@ -97,7 +97,8 @@ int InitClientSocket(SOCKET* socket_c, Ip remoteIp, Port remotePort)
 	clientInfo.sin_port = htons(remotePort);
 
 	// Call the connect function
-	if (connect(*socket_c, (SOCKADDR*)&clientInfo, sizeof(clientInfo)) == SOCKET_ERROR)
+	int status = connect(*socket_c, (SOCKADDR*)&clientInfo, sizeof(clientInfo));
+	if (status == SOCKET_ERROR)
 	{
 		printf("Failed to connect to %s:%d. Error: %ld\n", inet_ntoa(remoteIp), remotePort, WSAGetLastError());
 		return FALSE;
@@ -140,7 +141,7 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 	}
 
 	// Listen on the Socket.
-	ListenResult = listen(*mainSocket, MAX_CLIENTS);
+	ListenResult = listen(*mainSocket, SOMAXCONN);
 	if (ListenResult == SOCKET_ERROR)
 	{
 		printf("Failed listening on socket, error %ld.\n", WSAGetLastError());

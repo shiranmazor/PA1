@@ -62,6 +62,7 @@ bool HandleData(FILE* fileHandle)
 		int bytesWritten;
 		//rececied new byte
 		ResultData.received += 1;
+		//Todo:liad pay attention - you need to identify the last 8 bits
 		//Todo:calc acomulative crc...and save  it
 
 		//save data to disk:

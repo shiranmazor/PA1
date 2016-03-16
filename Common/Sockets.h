@@ -4,7 +4,7 @@
 #include <Windows.h>
 #include "Common.h"
 
-#define MAX_CLIENTS 5
+#define MAX_CLIENTS 1
 
 
 // Defines a pointer to a function used to search for free slots on the server
