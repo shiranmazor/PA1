@@ -1,6 +1,6 @@
 #ifndef _SENDER_H_
 #define _SENDER_H_
-#include "..\Shared\Sockets.h"
+#include "..\Common\Sockets.h"
 
 
 void printUsage();

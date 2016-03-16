@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Receiver.h"
 
 static ResultMessage ResultData;
@@ -12,7 +13,7 @@ static unsigned long recvChecksumRes;
 
 bool sendResultsMessage()
 {
-	Result result = Send(socketServer,(const char*)&ResultData, sizeof(ResultMessage));
+	Result result = Send(socketServer,(char*)&ResultData, sizeof(ResultMessage));
 	// send summary message
 	if (result != SUCCES)
 	{
@@ -90,7 +91,7 @@ bool HandleData(FILE* fileHandle)
 	
 }
 
-int receiverMain(listenIp, listenPort, filename)
+int receiverMain(Ip listenIp, Port listenPort, char* filename)
 {
 	//creating output file
 	outputFile = fopen(filename, "wb");
@@ -102,7 +103,7 @@ int receiverMain(listenIp, listenPort, filename)
 	}
 
 	//create client socket:
-	if (InitializeClientSocket(&socketServer, listenIp, listenPort) != 0)
+	if (InitClientSocket(&socketServer, listenIp, listenPort) != 0)
 	{
 		fclose(outputFile);
 		return -1;

@@ -1,7 +1,6 @@
 #ifndef _CHANNEL_H_
 #define _CHANNEL_H_
-
-#include "..\Shared\Sockets.h"
+#include "..\Common\Sockets.h"
 
 
 	

@@ -2,7 +2,7 @@
 #define _SOCKETS_H_
 #include <winsock2.h>
 #include <Windows.h>
-#include "Shared.h"
+#include "Common.h"
 
 #define MAX_CLIENTS 2
 
@@ -18,8 +18,8 @@ typedef struct
 } ClientSocketArgs;
 
 
-Result Receive(SOCKET sd, char* OutBuff, int BytedLeft );
-Result Send(SOCKET sd, const char* Buffer, int bytesLen);
+Result Receive(SOCKET sd, char* OutBuff, int BytedLeft);
+Result Send(SOCKET sd, char* Buffer, int bytesLen);
 
 Ip getIpAddress(const char* ipStr);
 

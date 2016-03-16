@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 	Port receiverPort;
 	double bit_error_p;
 	unsigned int random_seed, real_seed;
-	int num = power(2, 16);
+	int num = pow(2, 16);
 
 	if (argc != 5)
 	{

@@ -1,11 +1,11 @@
 #ifndef _RECEIVER_H_
 #define _RECEIVER_H_
 
-#include "..\Shared\Sockets.h"
+#include "..\Common\Sockets.h"
 
 
 void printUsage();
-int receiverMain(listenIp, listenPort, filename);
+int receiverMain(Ip listenIp, Port listenPort, char* filename);
 bool sendResultsMessage();
 void printResult();
 /*

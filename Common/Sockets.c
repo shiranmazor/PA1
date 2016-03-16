@@ -1,3 +1,7 @@
+#pragma warning(disable: 4996)
+#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include "sockets.h"
 
 static bool winSockInit = FALSE;
@@ -16,13 +20,13 @@ bool InitWinSock()
 	}
 	winSockInit = TRUE;
 	return TRUE;
-	
+
 }
 
 Ip getIpAddress(const char* ipStr)
 {
 	Ip address;
-	if (STRINGS_EQUAL(ipStr, "localhost"))
+	if (strcmp(ipStr, "localhost") == 0)
 		address.S_un.S_addr = inet_addr("127.0.0.1");
 	else
 		address.S_un.S_addr = inet_addr(ipStr);
@@ -31,20 +35,20 @@ Ip getIpAddress(const char* ipStr)
 }
 
 
-Result Send(SOCKET sd, const char* Buffer, int bytesLen)
+Result Send(SOCKET sd, char* Buffer, int bytesLen)
 {
-	int BytesSent ,remainingBytes;
+	int BytesSent, remainingBytes;
 	char* buffPtr = Buffer;
 	remainingBytes = bytesLen;
-	
+
 	while (remainingBytes > 0)
 	{
 
-		remainingBytes = send(sd, buffPtr, remainingBytes, 0);//send bytes and check if all bytes sent
+		BytesSent = send(sd, buffPtr, remainingBytes, 0);//send bytes and check if all bytes sent
 		if (BytesSent == SOCKET_ERROR)
 			return FAILED;
 		remainingBytes -= BytesSent;
-		buffPtr += BytesSent; 
+		buffPtr += BytesSent;
 	}
 
 	return SUCCES;
@@ -52,7 +56,7 @@ Result Send(SOCKET sd, const char* Buffer, int bytesLen)
 
 Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
 {
-	
+
 	int BytesTransferred, remainingBytes;
 	char* buffPtr = OutBuffer;
 	remainingBytes = BytedLeft;
@@ -66,7 +70,7 @@ Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
 			return NOT_CONNECTED; // recv() returns zero if connection was  disconnected - finish 
 
 		remainingBytes -= BytesTransferred;
-		buffPtr += BytesTransferred; 
+		buffPtr += BytesTransferred;
 	}
 
 	return SUCCES;
@@ -76,7 +80,7 @@ int InitClientSocket(SOCKET* socket_c, Ip remoteIp, Port remotePort)
 {
 	SOCKADDR_IN clientInfo;
 
-	if (!InitWinsock())
+	if (!InitWinSock())
 		return FALSE;
 
 	// Create a socket.
@@ -110,7 +114,7 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 	SOCKADDR_IN service;
 	int bindResult, ListenResult;
 
-	if (!InitWinsock())
+	if (!InitWinSock())
 	{
 		return FALSE;
 	}
@@ -152,7 +156,7 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 bool CleanupServerSocket(SOCKET socketToClose)
 {
 	int res;
-	
+
 	if (closesocket(socketToClose) == SOCKET_ERROR)
 	{
 		printf("Error while closing the socket");
