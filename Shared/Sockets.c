@@ -136,7 +136,7 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 	}
 
 	// Listen on the Socket.
-	ListenResult = listen(*mainSocket, SOMAXCONN);
+	ListenResult = listen(*mainSocket, MAX_CLIENTS);
 	if (ListenResult == SOCKET_ERROR)
 	{
 		printf("Failed listening on socket, error %ld.\n", WSAGetLastError());
@@ -149,10 +149,15 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 }
 
 
-void CleanupServerSocket()
+bool CleanupServerSocket(SOCKET socketToClose)
 {
 	int res;
 	
+	if (closesocket(socketToClose) == SOCKET_ERROR)
+	{
+		printf("Error while closing the socket");
+		return FALSE;
+	}
 	res = WSACleanup();
 	if (res == SOCKET_ERROR)
 	{

@@ -40,7 +40,7 @@ int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 	
 
 	//TODO: calc CRC  and checksun add it to the end of file
-	// TODO:ssending data to channel
+	// TODO:sending data to channel
 
 	//finish, closing and waiting for reciever
 	printf("Finished sending data\n");

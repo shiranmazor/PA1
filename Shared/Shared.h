@@ -9,6 +9,7 @@ typedef int bool;
 typedef unsigned char bit;
 typedef unsigned char byte;
 typedef unsigned long long ulong;
+#define CHUNK_SIZE 1024 //reading and sending 1K every time
 
 typedef struct ResultMessage
 {
