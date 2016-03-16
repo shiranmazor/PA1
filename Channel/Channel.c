@@ -44,9 +44,15 @@ int channelMain(Port senderPort, Port receiverPort, double bit_error_p, unsigned
 	Ip listenIp;
 	listenIp.S_un.S_addr = INADDR_ANY;
 
-
 	pError = bit_error_p;
 	srand(randSeed);
+
+	//init sender and listen to reciever
+	if (InitServerSocket(&listenSocketReceiver, listenIp, receiverPort) == FALSE)
+	{
+		printf("Error in opening Channel  server, can't listening to receiver\n");
+		return -1;
+	}
 
 	//init server and listen to sender:
 	if (InitServerSocket(&listenSocketSender, listenIp, senderPort) == FALSE)
@@ -55,12 +61,7 @@ int channelMain(Port senderPort, Port receiverPort, double bit_error_p, unsigned
 		return -1;
 	}
 
-	//init sender and listen to reciever
-	if (InitServerSocket(&listenSocketReceiver, listenIp, receiverPort) == FALSE)
-	{
-		printf("Error in opening Channel  server, can't listening to receiver\n");
-		return -1;
-	}
+	
 
 	printf("waiting for connections...\n");
 
@@ -86,14 +87,18 @@ accept both sockets from sender and reciver and flip bytes from sender, send the
 */
 int handleSenderFile()
 {
+	printf("Enter handle sender file\n");
 	byte buffer;
 	byte ErrorBuffer;
 	int sizeSender = sizeof(senderSocket.clientInfo);
 	int receiverSender = sizeof(receiverSocket.clientInfo);
 
 	//accept sender socket and reciever socket:
-	senderSocket.clientSocket = accept(listenSocketSender, (SOCKADDR*)&senderSocket.clientInfo, &sizeSender);
 	receiverSocket.clientSocket = accept(listenSocketReceiver, (SOCKADDR*)&receiverSocket.clientInfo, &receiverSender);
+	printf("Accepting receiver\n");
+	senderSocket.clientSocket = accept(listenSocketSender, (SOCKADDR*)&senderSocket.clientInfo, &sizeSender);
+	printf("Accepting sender\n");
+	
 
 	// both socket are connected, start reading data
 	while (Receive(senderSocket.clientSocket, &buffer, CHUNK_SIZE) == SUCCES)

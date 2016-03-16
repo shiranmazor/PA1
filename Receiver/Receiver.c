@@ -77,7 +77,7 @@ bool HandleData(FILE* fileHandle)
 	//close reading direction
 	if (shutdown(*socket, SD_RECEIVE) != 0)
 	{
-		printf("cant shutdown RECEIVE channel\n");
+		printf("can't shutdown RECEIVE channel\n");
 	}
 
 	printResult();
@@ -103,7 +103,7 @@ int receiverMain(Ip listenIp, Port listenPort, char* filename)
 	}
 
 	//create client socket:
-	if (InitClientSocket(&socketServer, listenIp, listenPort) != 0)
+	if (InitClientSocket(&socketServer, listenIp, listenPort) == FALSE)
 	{
 		fclose(outputFile);
 		return -1;
