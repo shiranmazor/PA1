@@ -4,10 +4,10 @@ static bool winSockInit = FALSE;
 
 bool InitWinSock()
 {
+	WSADATA wsa;
 	if (winSockInit)
 		return TRUE;
 
-	WSADATA wsa;
 	int iResult = WSAStartup(MAKEWORD(2, 2), &wsa);
 	if (iResult != NO_ERROR)
 	{
@@ -63,7 +63,7 @@ Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
 		if (BytesTransferred == SOCKET_ERROR)
 			return FAILED;
 		else if (BytesTransferred == 0)
-			return NOT_CONNECTED; // recv() returns zero if connection was  disconnected.
+			return NOT_CONNECTED; // recv() returns zero if connection was  disconnected - finish 
 
 		remainingBytes -= BytesTransferred;
 		buffPtr += BytesTransferred; 
@@ -74,7 +74,7 @@ Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
 
 int InitClientSocket(SOCKET* socket_c, Ip remoteIp, Port remotePort)
 {
-	SOCKADDR_IN clientS;
+	SOCKADDR_IN clientInfo;
 
 	if (!InitWinsock())
 		return FALSE;
@@ -88,12 +88,12 @@ int InitClientSocket(SOCKET* socket_c, Ip remoteIp, Port remotePort)
 		return FALSE;
 	}
 
-	clientS.sin_family = AF_INET;
-	clientS.sin_addr = remoteIp;
-	clientS.sin_port = htons(remotePort);
+	clientInfo.sin_family = AF_INET;
+	clientInfo.sin_addr = remoteIp;
+	clientInfo.sin_port = htons(remotePort);
 
 	// Call the connect function
-	if (connect(*socket_c, (SOCKADDR*)&clientS, sizeof(clientS)) == SOCKET_ERROR)
+	if (connect(*socket_c, (SOCKADDR*)&clientInfo, sizeof(clientInfo)) == SOCKET_ERROR)
 	{
 		printf("Failed to connect to %s:%d. Error: %ld\n", inet_ntoa(remoteIp), remotePort, WSAGetLastError());
 		return FALSE;
