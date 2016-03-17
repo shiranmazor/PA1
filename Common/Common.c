@@ -21,11 +21,16 @@ short int calcChecksum(short int* chunkBuffer, int bytesNum)
 {
 	int i;
 	short int sum;
-	if (bytesNum % 2 != 0) chunkBuffer[(bytesNum / 2) + 1] = 0;
+	bool end = FALSE;
+	if (bytesNum % 2 != 0){
+		chunkBuffer[(bytesNum / 2) + 1] = 0;
+		bytesNum++;
+		end = TRUE;
+	}
 	
 	for (i = 0; i < bytesNum / 2; i++)
 		sum += chunkBuffer[i];
 	
-	if (bytesNum % 2 != 0) return ~sum;
+	if (end) return ~sum;
 	return sum;
 }
