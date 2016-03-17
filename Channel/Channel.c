@@ -88,10 +88,10 @@ accept both sockets from sender and reciver and flip bytes from sender, send the
 int handleSenderFile()
 {
 	printf("Enter handle sender file\n");
-	byte buffer;
-	byte ErrorBuffer;
+	byte buffer[CHUNK_SIZE];
+	byte ErrorBuffer[CHUNK_SIZE];
 	int sizeSender = sizeof(senderSocket.clientInfo);
-	int receiverSender = sizeof(receiverSocket.clientInfo);
+	int receiverSender = sizeof(receiverSocket.clientInfo), i;
 
 	//accept sender socket and reciever socket:
 	receiverSocket.clientSocket = accept(listenSocketReceiver, (SOCKADDR*)&receiverSocket.clientInfo, &receiverSender);
@@ -104,7 +104,8 @@ int handleSenderFile()
 	while (Receive(senderSocket.clientSocket, &buffer, CHUNK_SIZE) == SUCCES)
 	{
 		// create error in buffer - flip  chunk bytes (per bit)
-		ErrorBuffer = flipBits(buffer);
+		for (i = 0; i < CHUNK_SIZE; i++)
+			ErrorBuffer[i] = flipBits(buffer[i]);
 		
 		//sending all error chunk to receiver
 		if (Send(receiverSocket.clientSocket, (char*)&ErrorBuffer, CHUNK_SIZE) != SUCCES)

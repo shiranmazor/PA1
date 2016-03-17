@@ -50,7 +50,7 @@ void printResult()
 
 bool HandleData(FILE* fileHandle)
 {
-	byte buff;
+	byte buff[CHUNK_SIZE];
 	Result res;
 	//init values:
 	ResultData.checksum = SUCCES;

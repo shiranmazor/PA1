@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Sender.h"
+#include "Common.h"
 
 
 static SOCKET socket_server;
@@ -38,14 +39,21 @@ bool getResultMessage(ResultMessage* msg)
 bool sendingFileData()
 {
 	int numBytesRead = 0;
-	byte fileBuff;
+	unsigned int crc32 = 0;
+	unsigned short int crc16 = 0;
+	short int checkSum = 0, tempSum;
+	byte fileBuff[CHUNK_SIZE];
+	byte* tail = malloc(sizeof(byte)*8);
 
 	do
 	{
 		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 
 		//here we will create the crc codes on fileBuff:
-		//Todo:liad
+		crc16 ^= calcCRC(&fileBuff, crc16, CRC16POLY);
+		crc32 ^= calcCRC(&fileBuff, crc32, CRC32POLY);		
+		checkSum += calcChecksum(&fileBuff, numBytesRead);
+
 		//sending file buffer:
 		if (Send(socket_server, (const char*)fileBuff, CHUNK_SIZE) == FALSE)
 		{
@@ -54,6 +62,19 @@ bool sendingFileData()
 			return FALSE;
 		}
 	} while (numBytesRead > 0);
+	
+	*tail = crc32;
+	*(tail + 4) = crc16;
+	*(tail + 6) = checkSum;
+	if (Send(socket_server, (const char*)tail, 8) == FALSE)
+	{
+		printf("Failed to send tail to channel\n");
+		fclose(inputFile);	// TODO: proper cleanup
+		return FALSE;
+	}
+
+	free(tail);
+	fclose(inputFile);	// TODO: proper cleanup
 
 	return TRUE;
 }
