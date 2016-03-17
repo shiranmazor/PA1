@@ -42,7 +42,7 @@ bool sendingFileData()
 	unsigned short int crc16 = 0;
 	short int checkSum = 0, tempSum;
 	byte fileBuff[CHUNK_SIZE];
-	byte* tail = malloc(sizeof(byte)*8);
+	unsigned char tail[8];
 
 	do
 	{
@@ -61,10 +61,16 @@ bool sendingFileData()
 			return FALSE;
 		}
 	} while (numBytesRead > 0);
-	
-	*tail = crc32;
-	*(tail + 4) = crc16;
-	*(tail + 6) = checkSum;
+
+	tail[0] = (crc32 >> 24) & 0xFF;
+	tail[1] = (crc32 >> 16) & 0xFF;
+	tail[2] = (crc32 >> 8) & 0xFF;
+	tail[3] = crc32 & 0xFF;
+	tail[4] = (crc16 >> 8) & 0xFF;
+	tail[5] = crc16 & 0xFF;
+	tail[6] = (checkSum >> 8) & 0xFF;
+	tail[7] = checkSum & 0xFF;
+
 	if (Send(socket_server, (const char*)tail, 8) == FALSE)
 	{
 		printf("Failed to send tail to channel\n");
@@ -72,7 +78,6 @@ bool sendingFileData()
 		return FALSE;
 	}
 
-	free(tail);
 	fclose(inputFile);	// TODO: proper cleanup
 
 	return TRUE;
