@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Sender.h"
-#include "Common.h"
 
 
 static SOCKET socket_server;

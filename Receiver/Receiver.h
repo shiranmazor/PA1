@@ -2,6 +2,7 @@
 #define _RECEIVER_H_
 
 #include "..\Common\Sockets.h"
+#include "..\Common\Common.h"
 
 
 void printUsage();
