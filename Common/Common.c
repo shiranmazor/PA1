@@ -20,7 +20,7 @@ unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, unsigned int polynom)
 short int calcChecksum(short int* chunkBuffer, int bytesNum)
 {
 	int i;
-	short int sum;
+	short int sum = 0;
 	bool end = FALSE;
 	if (bytesNum % 2 != 0){
 		chunkBuffer[(bytesNum / 2) + 1] = 0;
