@@ -48,8 +48,7 @@ bool sendingFileData()
 	unsigned int crc32 = 0;
 	unsigned short int crc16 = 0;
 	short int checkSum = 0;
-	byte fileBuff[CHUNK_SIZE];
-	unsigned char tail[8];
+	byte fileBuff[CHUNK_SIZE], tail[8];
 
 	do
 	{
@@ -69,6 +68,7 @@ bool sendingFileData()
 		}
 	} while (numBytesRead > 0);
 
+	// insert crc32, crc16 and checkSum into a char buffer for sending
 	tail[0] = (crc32 >> 24) & 0xFF;
 	tail[1] = (crc32 >> 16) & 0xFF;
 	tail[2] = (crc32 >> 8) & 0xFF;

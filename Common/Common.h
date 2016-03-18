@@ -31,12 +31,21 @@ typedef struct ResultMessage
 
 } ResultMessage;
 
+typedef struct DWordBuffer
+{
+	byte buff[8];
+	short int idx;
+	short int size;
+} DWordBuffer;
 
 
 //shared help functions:
 int getBytesNum(int bitsNum);
 unsigned int calcCRC(byte* chunkBuffer, unsigned int remainder, unsigned int polynom);
 short int calcChecksum(short int* chunkBuffer, int bytesNum);
+void initBuff(DWordBuffer buff);
+void reOrderBuff(DWordBuffer buff);
+int pushToBuff(DWordBuffer buff, byte* source, byte* res, int length);
 
 #endif
 

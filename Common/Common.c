@@ -34,3 +34,51 @@ short int calcChecksum(short int* chunkBuffer, int bytesNum)
 	if (end) return ~sum;
 	return sum;
 }
+
+void initBuff(DWordBuffer buff)
+{
+	buff.idx = 0;
+	buff.size = 0;
+}
+
+void reOrderBuff(DWordBuffer buff)
+{
+	int i = 0;
+	byte temp;
+	while (buff.idx != 0)
+	{
+		temp = buff.buff[i];
+		buff.buff[i] = buff.buff[buff.idx];
+		buff.buff[buff.idx] = temp;
+		buff.idx = (buff.idx + 1) % 8;
+		i++;
+	}
+}
+
+int pushToBuff(DWordBuffer buff, byte* source, byte* res, int length)
+{
+	int i = 0, j = 0;
+	byte res[CHUNK_SIZE];
+	if (buff.size < 8)
+	{
+		for (i = 0; i < length && buff.size < 8; i++)
+		{
+			buff.buff[buff.idx] = source[i];
+			buff.idx++;
+			buff.size++;
+		}
+	}
+	if (buff.size == 8 && i < length)
+	{
+		buff.idx %= 8;
+		for (; i < length && buff.idx < 8; i++)
+		{
+			res[j] = buff.buff[buff.idx];
+			buff.buff[buff.idx] = source[i];
+			buff.idx = (buff.idx + 1) % 8;
+			j++;
+		}
+		return j;
+	}
+	else return 0;
+}

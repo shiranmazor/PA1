@@ -58,24 +58,32 @@ void printResult()
 
 bool HandleData()
 {
-	byte buff[CHUNK_SIZE];
+	byte buff[CHUNK_SIZE], writebuff[CHUNK_SIZE];
+	DWordBuffer checkBuff;
 	Result res;
+	unsigned int crc32 = 0, crc32Sender;
+	unsigned short int crc16 = 0, crc16Sender;
+	short int checkSum = 0, checkSumSender, numBytes;
 	//init values:
 	ResultData.checksum = SUCCES;
 	ResultData.crc16 = SUCCES;
 	ResultData.crc32 = SUCCES;
+	initBuff(checkBuff);
 
 	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE)) == SUCCES)
 	{
 		int bytesWritten;
-		//rececied new byte
 		ResultData.received += CHUNK_SIZE;
-		//Todo:liad pay attention - you need to identify the last 8 bits
-		//Todo:calc acomulative crc...and save  it
 
-		//save data to disk:
-		bytesWritten = fwrite((char*)&buff, sizeof(byte), CHUNK_SIZE, outputFile);
-		ResultData.written += bytesWritten;
+		if ((numBytes = pushToBuff(checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
+		{
+			crc16 ^= calcCRC(&writebuff, crc16, CRC16POLY);
+			crc32 ^= calcCRC(&writebuff, crc32, CRC32POLY);
+			checkSum += calcChecksum(&writebuff, numBytes);
+			//save data to disk:
+			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
+			ResultData.written += bytesWritten;
+		}
 	}
 	if (res == FAILED)
 		return FALSE;
@@ -92,10 +100,19 @@ bool HandleData()
 		printf("can't shutdown RECEIVE channel\n");
 	}
 
+	// get crc32, crc16 and checkSum value from the buffer and verify
+	reOrderBuff(checkBuff);
+	crc32Sender = checkBuff.buff[0] << 24 + checkBuff.buff[1] << 16 + checkBuff.buff[2] << 8 + checkBuff.buff[3];
+	crc16Sender = checkBuff.buff[4] << 8 + checkBuff.buff[5];
+	checkSumSender = checkBuff.buff[6] << 8 + checkBuff.buff[7];
+	if (crc32 != crc32Sender) ResultData.crc32 = FAILED;
+	if (crc16 != crc16Sender) ResultData.crc16 = FAILED;
+	if (checkSum != checkSumSender) ResultData.checksum = FAILED;
+
 	printResult();
 	if (sendResultsMessage() == FALSE)
 	{
-		printf("failed to send resut to sender\n");
+		printf("failed to send result to sender\n");
 		return FALSE;
 	}
 	
