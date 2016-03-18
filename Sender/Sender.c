@@ -54,7 +54,7 @@ bool sendingFileData()
 		checkSum += calcChecksum(&fileBuff, numBytesRead);
 
 		//sending file buffer:
-		if (Send(socket_server, (const char*)fileBuff, CHUNK_SIZE) == FALSE)
+		if (Send(socket_server, (const char*)fileBuff, CHUNK_SIZE) == FAILED)
 		{
 			printf("Failed to send data to channel\n");
 			fclose(inputFile);	// TODO: proper cleanup
@@ -71,7 +71,7 @@ bool sendingFileData()
 	tail[6] = (checkSum >> 8) & 0xFF;
 	tail[7] = checkSum & 0xFF;
 
-	if (Send(socket_server, (const char*)tail, 8) == FALSE)
+	if (Send(socket_server, (const char*)tail, 8) == FAILED)
 	{
 		printf("Failed to send tail to channel\n");
 		fclose(inputFile);	// TODO: proper cleanup
