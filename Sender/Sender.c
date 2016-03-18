@@ -10,18 +10,25 @@ static unsigned long checksumRes;
 
 void printResults(const ResultMessage* msg)
 {
-	char* crc16Msg = 'FAIL';
-	char* crc32Msg = 'FAIL';
-	char* checksumMsg = 'FAIL';
+	//char fail[4] = 'FAIL';
+	char* crc16Msg = malloc(5 * sizeof(char));
+	char* crc32Msg = malloc(5 * sizeof(char));
+	char* checksumMsg = malloc(5 * sizeof(char));
+	strcpy(crc16Msg, "FAIL");
+	strcpy(crc32Msg, "FAIL");
+	strcpy(crc32Msg, "FAIL");
 
 	if (msg->crc16 == SUCCES)
-		crc16Msg = 'PASS';
+		strcpy(crc16Msg, "PASS");
 	if (msg->crc32 == SUCCES)
-		crc32Msg = 'PASS';
+		strcpy(crc32Msg, "PASS");
 	if (msg->checksum == SUCCES)
-		checksumMsg = 'PASS';
+		strcpy(checksumMsg, "PASS");
 	
 	fprintf(stderr, "CRC-32: %s; CRC-16: %s; Intenet cksum: %s\n", crc32Msg, crc16Msg, checksumMsg);
+	free(crc16Msg);
+	free(crc32Msg);
+	free(checksumMsg);
 }
 
 bool getResultMessage(ResultMessage* msg)
@@ -40,7 +47,7 @@ bool sendingFileData()
 	int numBytesRead = 0;
 	unsigned int crc32 = 0;
 	unsigned short int crc16 = 0;
-	short int checkSum = 0, tempSum;
+	short int checkSum = 0;
 	byte fileBuff[CHUNK_SIZE];
 	unsigned char tail[8];
 
@@ -54,7 +61,7 @@ bool sendingFileData()
 		checkSum += calcChecksum(&fileBuff, numBytesRead);
 
 		//sending file buffer:
-		if (Send(socket_server, (const char*)fileBuff, CHUNK_SIZE) == FAILED)
+		if (Send(socket_server, (char*)fileBuff, CHUNK_SIZE) == FAILED)
 		{
 			printf("Failed to send data to channel\n");
 			fclose(inputFile);	// TODO: proper cleanup
@@ -71,7 +78,7 @@ bool sendingFileData()
 	tail[6] = (checkSum >> 8) & 0xFF;
 	tail[7] = checkSum & 0xFF;
 
-	if (Send(socket_server, (const char*)tail, 8) == FAILED)
+	if (Send(socket_server, (char*)tail, 8) == FAILED)
 	{
 		printf("Failed to send tail to channel\n");
 		fclose(inputFile);	// TODO: proper cleanup

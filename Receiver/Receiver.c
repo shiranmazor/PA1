@@ -20,7 +20,7 @@ bool sendResultsMessage()
 		printf("cant send summary message, error code: %d", WSAGetLastError());
 		return FALSE;
 	}
-	if (shutdown(socket, SD_SEND) != 0)
+	if (shutdown(socketServer, SD_SEND) != 0)
 	{
 		printf("error while shutting down SEND channel\n");
 		return FALSE;
@@ -31,24 +31,32 @@ bool sendResultsMessage()
 
 void printResult()
 {
-	char* crc16Msg = 'FAIL';
-	char* crc32Msg = 'FAIL';
-	char* checksumMsg = 'FAIL';
+	//char fail[4] =;
+	char* crc16Msg = malloc(5*sizeof(char));
+	char* crc32Msg = malloc(5 * sizeof(char));
+	char* checksumMsg = malloc(5 * sizeof(char));
+	strcpy(crc16Msg, "FAIL");
+	strcpy(crc32Msg, "FAIL");
+	strcpy(crc32Msg, "FAIL");
 
 	if (ResultData.crc16 == SUCCES)
-		crc16Msg = 'PASS';
+		strcpy(crc16Msg, "PASS");
 	if (ResultData.crc32 == SUCCES)
-		crc32Msg = 'PASS';
+		strcpy(crc32Msg, "PASS");
 	if (ResultData.checksum == SUCCES)
-		checksumMsg = 'PASS';
+		strcpy(checksumMsg, "PASS");
 
 	fprintf(stderr, "received: %d bytes written: %d bytes\n", ResultData.received, ResultData.written);
 	fprintf(stderr, "CRC-32:%s. Computed %ld, received %ld\n", crc32Msg, actualCrc32Res, recvCrc32Res);
 	fprintf(stderr, "CRC-16:%s. Computed %ld, received %ld\n", crc16Msg, actualCrc16Res, recvCrc16Res);
 	fprintf(stderr, "Inet-cksum:%s. Computed %ld, received %ld\n", checksumMsg, actualChecksumRes, recvChecksumRes);
+	
+	free(crc16Msg);
+	free(crc32Msg);
+	free(checksumMsg);
 }
 
-bool HandleData(FILE* fileHandle)
+bool HandleData()
 {
 	byte buff[CHUNK_SIZE];
 	Result res;
@@ -61,22 +69,25 @@ bool HandleData(FILE* fileHandle)
 	{
 		int bytesWritten;
 		//rececied new byte
-		ResultData.received += 1;
+		ResultData.received += CHUNK_SIZE;
 		//Todo:liad pay attention - you need to identify the last 8 bits
 		//Todo:calc acomulative crc...and save  it
 
 		//save data to disk:
-		bytesWritten = fwrite((char*)&buff, sizeof(byte), CHUNK_SIZE, fileHandle);
+		bytesWritten = fwrite((char*)&buff, sizeof(byte), CHUNK_SIZE, outputFile);
 		ResultData.written += bytesWritten;
 	}
 	if (res == FAILED)
 		return FALSE;
 
-	fclose(fileHandle);
-	outputFile = NULL;
+	if (outputFile != NULL)
+	{
+		fclose(outputFile);
+		outputFile = NULL;
+	}
 
 	//close reading direction
-	if (shutdown(*socket, SD_RECEIVE) != 0)
+	if (shutdown(socketServer, SD_RECEIVE) != 0)
 	{
 		printf("can't shutdown RECEIVE channel\n");
 	}
@@ -106,16 +117,24 @@ int receiverMain(Ip listenIp, Port listenPort, char* filename)
 	//create client socket:
 	if (InitClientSocket(&socketServer, listenIp, listenPort) == FALSE)
 	{
-		fclose(outputFile);
+		if (outputFile != NULL)
+		{
+			fclose(outputFile);
+			outputFile = NULL;
+		}
+		
 		return -1;
 	}
 	
 
 	//get file data and check errors and print sammary:
-	if (HandleData(outputFile) == FALSE)
+	if (HandleData() == FALSE)
 	{
-		printf("Error receiving data from channel");
-		fclose(outputFile);
+		if (outputFile != NULL)
+		{
+			fclose(outputFile);
+			outputFile = NULL;
+		}
 		return -1;
 	}
 	// end of reciver task - cleanup reciever:
@@ -123,7 +142,10 @@ int receiverMain(Ip listenIp, Port listenPort, char* filename)
 	closesocket(socketServer);
 
 	if (outputFile != NULL)
+	{
 		fclose(outputFile);
+		outputFile = NULL;
+	}
 	
 	return 0;
 }

@@ -61,8 +61,6 @@ int channelMain(Port senderPort, Port receiverPort, double bit_error_p, unsigned
 		return -1;
 	}
 
-	
-
 	printf("waiting for connections...\n");
 
 	//now we will accept the sender  and accept the socket receiver and will flip every  bit
@@ -87,7 +85,6 @@ accept both sockets from sender and reciver and flip bytes from sender, send the
 */
 int handleSenderFile()
 {
-	printf("Enter handle sender file\n");
 	byte buffer[CHUNK_SIZE];
 	byte ErrorBuffer[CHUNK_SIZE];
 	int sizeSender = sizeof(senderSocket.clientInfo);
@@ -95,9 +92,7 @@ int handleSenderFile()
 
 	//accept sender socket and reciever socket:
 	receiverSocket.clientSocket = accept(listenSocketReceiver, (SOCKADDR*)&receiverSocket.clientInfo, &receiverSender);
-	printf("Accepting receiver\n");
 	senderSocket.clientSocket = accept(listenSocketSender, (SOCKADDR*)&senderSocket.clientInfo, &sizeSender);
-	printf("Accepting sender\n");
 	
 
 	// both socket are connected, start reading data

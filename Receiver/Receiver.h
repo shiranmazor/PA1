@@ -15,6 +15,6 @@ saving all data to disk
 compare actual codes to receive code
 prapare the result message and send it back to channel
 */
-bool HandleData(FILE* fileHandle);
+bool HandleData();
 
 #endif
