@@ -18,7 +18,7 @@ bool shouldFlip()
 {
 	// generate a random number between [0,1]
 	float x = ((float)rand() / (float)(RAND_MAX));
-
+	return FALSE;
 	// convert Bernoulli(pError)
 	return x < pError ? TRUE : FALSE;
 }
@@ -132,7 +132,7 @@ ResultMessage handleReceiverMessage()
 
 void printUsage()
 {
-	printf("Usage: channel.exe <sender_port> <receiver_port> <bit_error_probability> <random_seed>");
+	printf("Usage: channel.exe <sender_port> <receiver_port> <bit_error_probability> <random_seed>\n");
 }
 
 
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 
 	if (channelMain(senderPort, receiverPort, bit_error_p, real_seed) != 0)
 	{
-		printf("error while running channel");
+		printf("error while running channel\n");
 		return -1;
 	}
 

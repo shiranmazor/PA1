@@ -17,68 +17,73 @@ unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, unsigned int polynom)
 }
 
 
-short int calcChecksum(short int* chunkBuffer, int bytesNum)
+unsigned int calcChecksum(byte* chunkBuffer, int bytesNum)
 {
 	int i;
-	short int sum = 0;
-	bool end = FALSE;
+	unsigned int sum = 0;
+
 	if (bytesNum % 2 != 0){
-		chunkBuffer[(bytesNum / 2) + 1] = 0;
+		chunkBuffer[bytesNum] = 0;
 		bytesNum++;
-		end = TRUE;
 	}
 	
 	for (i = 0; i < bytesNum / 2; i++)
-		sum += chunkBuffer[i];
+		sum += (chunkBuffer[i * 2] << 8) + chunkBuffer[i * 2 + 1];
 	
-	if (end) return ~sum;
 	return sum;
 }
 
-void initBuff(DWordBuffer buff)
+unsigned short int closeCheckSum(unsigned int sum)
 {
-	buff.idx = 0;
-	buff.size = 0;
+	// Fold 32-bit sum to 16 bits
+	while (sum >> 16)
+		sum = (sum & 0xFFFF) + (sum >> 16);
+
+	return(~sum);
 }
 
-void reOrderBuff(DWordBuffer buff)
+void initBuff(DWordBuffer* buff){
+	buff->idx = 0;
+	buff->size = 0;
+}
+
+void reOrderBuff(DWordBuffer* buff)
 {
 	int i = 0;
 	byte temp;
-	while (buff.idx != 0)
+	while (buff->idx != 0)
 	{
-		temp = buff.buff[i];
-		buff.buff[i] = buff.buff[buff.idx];
-		buff.buff[buff.idx] = temp;
-		buff.idx = (buff.idx + 1) % 8;
+		temp = buff->buff[i];
+		buff->buff[i] = buff->buff[buff->idx];
+		buff->buff[buff->idx] = temp;
+		buff->idx = (buff->idx + 1) % 8;
 		i++;
 	}
 }
 
-int pushToBuff(DWordBuffer buff, byte* source, byte* res, int length)
+int pushToBuff(DWordBuffer* buff, byte* inBuff, byte* outBuff, int length)
 {
-	int i = 0, j = 0;
-	byte res[CHUNK_SIZE];
-	if (buff.size < 8)
+	int inBuffIdx = 0, outBuffIdx = 0;
+	if (buff->size < 8)
 	{
-		for (i = 0; i < length && buff.size < 8; i++)
+		for (inBuffIdx = 0; inBuffIdx < length && buff->size < 8; inBuffIdx++)
 		{
-			buff.buff[buff.idx] = source[i];
-			buff.idx++;
-			buff.size++;
+			buff->buff[buff->idx] = inBuff[inBuffIdx];
+			buff->idx++;
+			buff->size++;
 		}
 	}
-	if (buff.size == 8 && i < length)
+	if (buff->size == 8 && inBuffIdx < length)
 	{
-		buff.idx %= 8;
-		for (; i < length && buff.idx < 8; i++)
+		buff->idx = buff->idx % 8;
+		for (; inBuffIdx < length; inBuffIdx++)
 		{
-			res[j] = buff.buff[buff.idx];
-			buff.buff[buff.idx] = source[i];
-			buff.idx = (buff.idx + 1) % 8;
-			j++;
+			outBuff[outBuffIdx] = buff->buff[buff->idx];
+			buff->buff[buff->idx] = inBuff[inBuffIdx];
+			buff->idx = (buff->idx + 1) % 8;
+			outBuffIdx++;
 		}
-		return j;
+		return outBuffIdx;
 	}
 	else return 0;
 }

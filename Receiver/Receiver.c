@@ -4,12 +4,12 @@
 static ResultMessage ResultData;
 static FILE* outputFile;
 static SOCKET socketServer;
-static unsigned long actualCrc32Res;
-static unsigned long actualCrc16Res;
-static unsigned long actualChecksumRes;
-static unsigned long recvCrc32Res;
-static unsigned long recvCrc16Res;
-static unsigned long recvChecksumRes;
+static unsigned int actualCrc32Res;
+static unsigned short int actualCrc16Res;
+static unsigned short int actualChecksumRes;
+static unsigned int recvCrc32Res;
+static unsigned short int recvCrc16Res;
+static unsigned short int recvChecksumRes;
 
 bool sendResultsMessage()
 {
@@ -37,7 +37,7 @@ void printResult()
 	char* checksumMsg = malloc(5 * sizeof(char));
 	strcpy(crc16Msg, "FAIL");
 	strcpy(crc32Msg, "FAIL");
-	strcpy(crc32Msg, "FAIL");
+	strcpy(checksumMsg, "FAIL");
 
 	if (ResultData.crc16 == SUCCES)
 		strcpy(crc16Msg, "PASS");
@@ -61,25 +61,26 @@ bool HandleData()
 	byte buff[CHUNK_SIZE], writebuff[CHUNK_SIZE];
 	DWordBuffer checkBuff;
 	Result res;
-	unsigned int crc32 = 0, crc32Sender;
-	unsigned short int crc16 = 0, crc16Sender;
-	short int checkSum = 0, checkSumSender, numBytes;
+	unsigned int checkSumWIP = 0;
+	short int numBytes;
 	//init values:
 	ResultData.checksum = SUCCES;
 	ResultData.crc16 = SUCCES;
 	ResultData.crc32 = SUCCES;
-	initBuff(checkBuff);
+	initBuff(&checkBuff);
+	
 
 	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE)) == SUCCES)
 	{
 		int bytesWritten;
 		ResultData.received += CHUNK_SIZE;
 
-		if ((numBytes = pushToBuff(checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
+		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
 		{
-			crc16 ^= calcCRC(&writebuff, crc16, CRC16POLY);
-			crc32 ^= calcCRC(&writebuff, crc32, CRC32POLY);
-			checkSum += calcChecksum(&writebuff, numBytes);
+			actualCrc16Res ^= calcCRC(&writebuff, actualCrc16Res, CRC16POLY);
+			actualCrc32Res ^= calcCRC(&writebuff, actualCrc32Res, CRC32POLY);
+			checkSumWIP += calcChecksum(&writebuff, numBytes);
+			
 			//save data to disk:
 			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
 			ResultData.written += bytesWritten;
@@ -99,15 +100,17 @@ bool HandleData()
 	{
 		printf("can't shutdown RECEIVE channel\n");
 	}
+	actualChecksumRes = closeCheckSum(checkSumWIP);
 
 	// get crc32, crc16 and checkSum value from the buffer and verify
-	reOrderBuff(checkBuff);
-	crc32Sender = checkBuff.buff[0] << 24 + checkBuff.buff[1] << 16 + checkBuff.buff[2] << 8 + checkBuff.buff[3];
-	crc16Sender = checkBuff.buff[4] << 8 + checkBuff.buff[5];
-	checkSumSender = checkBuff.buff[6] << 8 + checkBuff.buff[7];
-	if (crc32 != crc32Sender) ResultData.crc32 = FAILED;
-	if (crc16 != crc16Sender) ResultData.crc16 = FAILED;
-	if (checkSum != checkSumSender) ResultData.checksum = FAILED;
+	reOrderBuff(&checkBuff);
+	recvCrc32Res = (checkBuff.buff[0] << 24) + (checkBuff.buff[1] << 16) + (checkBuff.buff[2] << 8) + checkBuff.buff[3];
+	recvCrc16Res = (checkBuff.buff[4] << 8) + checkBuff.buff[5];
+	recvChecksumRes = (checkBuff.buff[6] << 8) + checkBuff.buff[7];
+
+	if (actualCrc32Res != recvCrc32Res) ResultData.crc32 = FAILED;
+	if (actualCrc16Res != recvCrc16Res) ResultData.crc16 = FAILED;
+	if (actualChecksumRes != recvChecksumRes) ResultData.checksum = FAILED;
 
 	printResult();
 	if (sendResultsMessage() == FALSE)
@@ -183,6 +186,7 @@ int main(int argc, char** argv)
 	if (argc != 4)
 	{
 		printUsage();
+		return -1;
 	}
 
 	listenIp = getIpAddress(argv[1]);

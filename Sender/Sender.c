@@ -4,9 +4,9 @@
 
 static SOCKET socket_server;
 static FILE* inputFile;
-static unsigned long crc32Res;
-static unsigned long crc16Res;
-static unsigned long checksumRes;
+static unsigned int crc32Res;
+static unsigned short int crc16Res;
+static unsigned short int checksumRes;
 
 void printResults(const ResultMessage* msg)
 {
@@ -16,7 +16,7 @@ void printResults(const ResultMessage* msg)
 	char* checksumMsg = malloc(5 * sizeof(char));
 	strcpy(crc16Msg, "FAIL");
 	strcpy(crc32Msg, "FAIL");
-	strcpy(crc32Msg, "FAIL");
+	strcpy(checksumMsg, "FAIL");
 
 	if (msg->crc16 == SUCCES)
 		strcpy(crc16Msg, "PASS");
@@ -45,19 +45,16 @@ bool getResultMessage(ResultMessage* msg)
 bool sendingFileData()
 {
 	int numBytesRead = 0;
-	unsigned int crc32 = 0;
-	unsigned short int crc16 = 0;
-	short int checkSum = 0;
+	unsigned int checkSumWIP = 0;
 	byte fileBuff[CHUNK_SIZE], tail[8];
 
-	do
+	numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
+	while (numBytesRead > 0)
 	{
-		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
-
-		//here we will create the crc codes on fileBuff:
-		crc16 ^= calcCRC(&fileBuff, crc16, CRC16POLY);
-		crc32 ^= calcCRC(&fileBuff, crc32, CRC32POLY);		
-		checkSum += calcChecksum(&fileBuff, numBytesRead);
+		//calc crc and checksum codes on fileBuff:
+		crc16Res ^= calcCRC(&fileBuff, crc16Res, CRC16POLY);
+		crc32Res ^= calcCRC(&fileBuff, crc32Res, CRC32POLY);
+		checkSumWIP += calcChecksum(&fileBuff, numBytesRead);
 
 		//sending file buffer:
 		if (Send(socket_server, (char*)fileBuff, CHUNK_SIZE) == FAILED)
@@ -66,17 +63,19 @@ bool sendingFileData()
 			fclose(inputFile);	// TODO: proper cleanup
 			return FALSE;
 		}
-	} while (numBytesRead > 0);
+		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
+	}
+	checksumRes = closeCheckSum(checkSumWIP);
 
 	// insert crc32, crc16 and checkSum into a char buffer for sending
-	tail[0] = (crc32 >> 24) & 0xFF;
-	tail[1] = (crc32 >> 16) & 0xFF;
-	tail[2] = (crc32 >> 8) & 0xFF;
-	tail[3] = crc32 & 0xFF;
-	tail[4] = (crc16 >> 8) & 0xFF;
-	tail[5] = crc16 & 0xFF;
-	tail[6] = (checkSum >> 8) & 0xFF;
-	tail[7] = checkSum & 0xFF;
+	tail[0] = (crc32Res >> 24) & 0xFF;
+	tail[1] = (crc32Res >> 16) & 0xFF;
+	tail[2] = (crc32Res >> 8) & 0xFF;
+	tail[3] = crc32Res & 0xFF;
+	tail[4] = (crc16Res >> 8) & 0xFF;
+	tail[5] = crc16Res & 0xFF;
+	tail[6] = (checksumRes >> 8) & 0xFF;
+	tail[7] = checksumRes & 0xFF;
 
 	if (Send(socket_server, (char*)tail, 8) == FAILED)
 	{
@@ -151,6 +150,7 @@ int main(int argc, char** argv)
 	if (argc != 4)
 	{
 		printUsage();
+		return -1;
 	}
 
 	channelIp = getIpAddress(argv[1]);

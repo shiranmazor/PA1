@@ -160,7 +160,7 @@ bool CleanupServerSocket(SOCKET socketToClose)
 
 	if (closesocket(socketToClose) == SOCKET_ERROR)
 	{
-		printf("Error while closing the socket");
+		printf("Error while closing the socket\n");
 		return FALSE;
 	}
 	res = WSACleanup();
