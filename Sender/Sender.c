@@ -128,8 +128,6 @@ int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 		printResults(&message);
 	}
 
-	closesocket(socket_server);
-	WSACleanup();
 
 	fclose(inputFile);
 

@@ -74,7 +74,13 @@ int channelMain(Port senderPort, Port receiverPort, double bit_error_p, unsigned
 		return -1;
 	if (CleanupServerSocket(listenSocketReceiver) == FALSE)
 		return -1;
-
+	
+	int res = WSACleanup();
+	if (res == SOCKET_ERROR)
+	{
+		printf("Error at socket( ): %ld\n", WSAGetLastError());
+		return -1;
+	}
 	//print output message
 	printOutputMessage(senderSocket.clientInfo.sin_addr, receiverSocket.clientInfo.sin_addr, message.received);
 	return 0;
@@ -141,7 +147,7 @@ int main(int argc, char** argv)
 	Port senderPort;
 	Port receiverPort;
 	double bit_error_p;
-	unsigned int random_seed, real_seed;
+	unsigned int random_seed;
 	int num = pow(2, 16);
 
 	if (argc != 5)
@@ -155,7 +161,7 @@ int main(int argc, char** argv)
 	bit_error_p = atof(argv[3]);
 	random_seed = atoi(argv[4]);
 
-	real_seed = random_seed / num;
+	bit_error_p = bit_error_p / num;
 	
 
 	if (receiverPort == senderPort)
@@ -164,7 +170,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	if (channelMain(senderPort, receiverPort, bit_error_p, real_seed) != 0)
+	if (channelMain(senderPort, receiverPort, bit_error_p, random_seed) != 0)
 	{
 		printf("error while running channel\n");
 		return -1;

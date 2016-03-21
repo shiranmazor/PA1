@@ -47,9 +47,9 @@ void printResult()
 		strcpy(checksumMsg, "PASS");
 
 	fprintf(stderr, "received: %d bytes written: %d bytes\n", ResultData.received, ResultData.written);
-	fprintf(stderr, "CRC-32:%s. Computed %ld, received %ld\n", crc32Msg, actualCrc32Res, recvCrc32Res);
-	fprintf(stderr, "CRC-16:%s. Computed %ld, received %ld\n", crc16Msg, actualCrc16Res, recvCrc16Res);
-	fprintf(stderr, "Inet-cksum:%s. Computed %ld, received %ld\n", checksumMsg, actualChecksumRes, recvChecksumRes);
+	fprintf(stderr, "CRC-32:%s. Computed 0x%.8x, received 0x%.8x\n", crc32Msg, actualCrc32Res, recvCrc32Res);
+	fprintf(stderr, "CRC-16:%s. Computed 0x%.4x, received 0x%.4x\n", crc16Msg, actualCrc16Res, recvCrc16Res);
+	fprintf(stderr, "Inet-cksum:%s. Computed 0x%.4x, received 0x%.4x\n", checksumMsg, actualChecksumRes, recvChecksumRes);
 	
 	free(crc16Msg);
 	free(crc32Msg);
@@ -157,10 +157,11 @@ int receiverMain(Ip listenIp, Port listenPort, char* filename)
 		}
 		return -1;
 	}
-	// end of reciver task - cleanup reciever:
+	
 
-	closesocket(socketServer);
+	//closesocket(socketServer);
 
+	//in case the file is still open
 	if (outputFile != NULL)
 	{
 		fclose(outputFile);
