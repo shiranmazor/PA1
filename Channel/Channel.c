@@ -18,7 +18,7 @@ bool shouldFlip()
 {
 	// generate a random number between [0,1]
 	float x = ((float)rand() / (float)(RAND_MAX));
-	return FALSE;
+
 	// convert Bernoulli(pError)
 	return x < pError ? TRUE : FALSE;
 }
