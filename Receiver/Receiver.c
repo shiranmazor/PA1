@@ -107,7 +107,7 @@ bool HandleData()
 	recvCrc32Res = (checkBuff.buff[0] << 24) + (checkBuff.buff[1] << 16) + (checkBuff.buff[2] << 8) + checkBuff.buff[3];
 	recvCrc16Res = (checkBuff.buff[4] << 8) + checkBuff.buff[5];
 	recvChecksumRes = (checkBuff.buff[6] << 8) + checkBuff.buff[7];
-
+	//comapre with received error codes
 	if (actualCrc32Res != recvCrc32Res) ResultData.crc32 = FAILED;
 	if (actualCrc16Res != recvCrc16Res) ResultData.crc16 = FAILED;
 	if (actualChecksumRes != recvChecksumRes) ResultData.checksum = FAILED;

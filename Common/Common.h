@@ -40,7 +40,6 @@ typedef struct DWordBuffer
 
 
 //shared help functions:
-int getBytesNum(int bitsNum);
 unsigned int calcCRC(byte* chunkBuffer, unsigned int remainder, unsigned int polynom);
 unsigned int calcChecksum(byte* chunkBuffer, int bytesNum);
 unsigned short int closeCheckSum(unsigned int sum);

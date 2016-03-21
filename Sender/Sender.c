@@ -111,8 +111,6 @@ int senderMain(Ip remoteIp, Port remotePort, const char* filename)
 		return -1;
 	}
 
-	//finish, closing and waiting for reciever
-	printf("Finished sending data\n");
 	if (shutdown(socket_server, SD_SEND) != 0)
 	{
 		printf("error while shutting down send channel\n");

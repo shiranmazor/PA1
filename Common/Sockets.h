@@ -20,7 +20,7 @@ typedef struct
 
 Result Receive(SOCKET sd, char* OutBuff, int BytedLeft);
 Result Send(SOCKET sd, char* Buffer, int bytesLen);
-
+//convert string address to IN_ADDR address
 Ip getIpAddress(const char* ipStr);
 
 bool InitWinSock();
