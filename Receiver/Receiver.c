@@ -71,9 +71,10 @@ bool HandleData()
 	byte temp[3] = { '1', '1', '\0' };
 	int k = 0;
 	int *receivedBytes = &k;
-
-	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE, receivedBytes)) == SUCCES)
+	res = Receive(socketServer, (char*)&buff, CHUNK_SIZE, receivedBytes);
+	while (res == SUCCES)
 	{
+		printf("received bytes %d\n", *receivedBytes);
 		int bytesWritten;
 		ResultData.received += *receivedBytes;
 		if (*receivedBytes == 1) printf("got 1 byte!!\n");
@@ -92,7 +93,29 @@ bool HandleData()
 		if (*receivedBytes == 1) printf("got 1 byte!! bytes from buff %d\n", numBytes);
 		k = 0;
 		receivedBytes = &k;
+		res = Receive(socketServer, (char*)&buff, CHUNK_SIZE, receivedBytes);
 	}
+
+	if (res == NOT_CONNECTED && *receivedBytes > 0)
+	{
+		printf("received bytes %d\n", *receivedBytes);
+		int bytesWritten;
+		ResultData.received += *receivedBytes;
+
+		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, *receivedBytes)) != 0)
+		{
+			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, numBytes, 16);
+			actualCrc32Res = calcCRC(&writebuff, actualCrc32Res, numBytes, 32);
+			checkSumWIP += calcChecksum(&writebuff, numBytes);
+			printf("16: %hu 0x%.4x 32: %u 0x%.8x bytesnum: %d\n", actualCrc16Res, actualCrc16Res, actualCrc32Res, actualCrc32Res, numBytes);
+			temp[0] = writebuff[0];
+			temp[1] = writebuff[1];
+			//save data to disk:
+			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
+			ResultData.written += bytesWritten;
+		}
+	}
+
 	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
 	if (res == FAILED)
 		return FALSE;
