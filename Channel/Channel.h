@@ -9,6 +9,6 @@ int handleSenderFile();
 ResultMessage handleReceiverMessage();
 byte flipBits(byte msg);
 bool shouldFlip();
-void printOutputMessage(IN_ADDR  senderAddress, IN_ADDR  receiverAddress, int byteReceived, int byteFlipped);
+void printOutputMessage(IN_ADDR  senderAddress, IN_ADDR  receiverAddress, int byteReceived);
 
 #endif

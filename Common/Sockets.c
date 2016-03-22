@@ -54,12 +54,13 @@ Result Send(SOCKET sd, char* Buffer, int bytesLen)
 	return SUCCES;
 }
 
-Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
+Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft, int* byteReceived)
 {
 
 	int BytesTransferred, remainingBytes;
 	char* buffPtr = OutBuffer;
 	remainingBytes = BytedLeft;
+	*byteReceived = 0;
 
 	while (remainingBytes > 0)
 	{
@@ -71,8 +72,10 @@ Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft)
 
 		remainingBytes -= BytesTransferred;
 		buffPtr += BytesTransferred;
+		*byteReceived += BytesTransferred;
+		
 	}
-
+	
 	return SUCCES;
 }
 
@@ -156,8 +159,6 @@ int InitServerSocket(SOCKET* mainSocket, Ip listeningAddress, Port listeningPort
 
 bool CleanupServerSocket(SOCKET socketToClose)
 {
-	int res;
-
 	if (closesocket(socketToClose) == SOCKET_ERROR)
 	{
 		printf("Error while closing the socket\n");

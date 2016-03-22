@@ -61,8 +61,6 @@ int channelMain(Port senderPort, Port receiverPort, double bit_error_p, unsigned
 		return -1;
 	}
 
-	printf("waiting for connections...\n");
-
 	//now we will accept the sender  and accept the socket receiver and will flip every  bit
 	handleSenderFile();
 
@@ -99,20 +97,24 @@ int handleSenderFile()
 	//accept sender socket and reciever socket:
 	receiverSocket.clientSocket = accept(listenSocketReceiver, (SOCKADDR*)&receiverSocket.clientInfo, &receiverSender);
 	senderSocket.clientSocket = accept(listenSocketSender, (SOCKADDR*)&senderSocket.clientInfo, &sizeSender);
-	
+	int n = 0;
+	int *bytesRec;
+	bytesRec = &n;
 
 	// both socket are connected, start reading data
-	while (Receive(senderSocket.clientSocket, &buffer, CHUNK_SIZE) == SUCCES)
+	while (Receive(senderSocket.clientSocket, (char*)&buffer, CHUNK_SIZE, bytesRec) == SUCCES)
 	{
 		// create error in buffer - flip  chunk bytes (per bit)
-		for (i = 0; i < CHUNK_SIZE; i++)
+		for (i = 0; i < *bytesRec; i++)
 			ErrorBuffer[i] = flipBits(buffer[i]);
 		
 		//sending all error chunk to receiver
-		if (Send(receiverSocket.clientSocket, (char*)&ErrorBuffer, CHUNK_SIZE) != SUCCES)
+		if (Send(receiverSocket.clientSocket, (char*)&ErrorBuffer, *bytesRec) != SUCCES)
 		{
 			printf("error sending data to receiver\n");
 		}
+		n = 0;
+		bytesRec = &n;
 	}
 
 	// sender finished sending, signal receiver
@@ -122,12 +124,14 @@ int handleSenderFile()
 }
 ResultMessage handleReceiverMessage()
 {
+	int n = 0;
+	int *bytesRec = &n;
 	ResultMessage message;
 	// now transfer the message from receiver to sender
 	// now transfer the message from receiver to sender
-	if (Receive(receiverSocket.clientSocket, (char*)&message, sizeof(ResultMessage)) == SUCCES)
+	if (Receive(receiverSocket.clientSocket, (char*)&message, sizeof(ResultMessage), bytesRec) == SUCCES)
 	{
-		if (Send(senderSocket.clientSocket, (const char*)&message, sizeof(ResultMessage)) != SUCCES)
+		if (Send(senderSocket.clientSocket, (char*)&message, sizeof(ResultMessage)) != SUCCES)
 		{
 			// handle error
 			printf("error sending data to sender\n");
@@ -148,7 +152,7 @@ int main(int argc, char** argv)
 	Port receiverPort;
 	double bit_error_p;
 	unsigned int random_seed;
-	int num = pow(2, 16);
+	double num = pow(2, 16);
 
 	if (argc != 5)
 	{

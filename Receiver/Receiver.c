@@ -69,11 +69,13 @@ bool HandleData()
 	ResultData.crc32 = SUCCES;
 	initBuff(&checkBuff);
 	byte temp[3] = { '1', '1', '\0' };
+	int k = 0;
+	int *receivedBytes = &k;
 
-	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE)) == SUCCES)
+	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE, receivedBytes)) == SUCCES)
 	{
 		int bytesWritten;
-		ResultData.received += CHUNK_SIZE;
+		ResultData.received += *receivedBytes;
 
 		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
 		{
@@ -87,6 +89,8 @@ bool HandleData()
 			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
 			ResultData.written += bytesWritten;
 		}
+		k = 0;
+		receivedBytes = &k;
 	}
 	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
 	if (res == FAILED)

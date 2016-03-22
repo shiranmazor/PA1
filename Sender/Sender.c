@@ -34,7 +34,10 @@ void printResults(const ResultMessage* msg)
 
 bool getResultMessage(ResultMessage* msg)
 {
-	if (Receive(socket_server,(char*)msg, sizeof(ResultMessage)) != SUCCES)
+	int i = 0;
+	int *recBytes;
+	recBytes = &i;
+	if (Receive(socket_server, (char*)msg, sizeof(ResultMessage), recBytes) != SUCCES)
 	{
 		printf("cant receive summary message\n");
 		return FALSE;
@@ -61,7 +64,7 @@ bool sendingFileData()
 		temp[0] = fileBuff[0];
 		temp[1] = fileBuff[1];
 		//sending file buffer:
-		if (Send(socket_server, (char*)fileBuff, CHUNK_SIZE) == FAILED)
+		if (Send(socket_server, (char*)fileBuff, numBytesRead) == FAILED)
 		{
 			printf("Failed to send data to channel\n");
 			fclose(inputFile);
