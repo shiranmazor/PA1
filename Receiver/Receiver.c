@@ -4,8 +4,8 @@
 static ResultMessage ResultData;
 static FILE* outputFile;
 static SOCKET socketServer;
-static unsigned int actualCrc32Res;
-static unsigned short int actualCrc16Res;
+static unsigned int actualCrc32Res = 0xFFFFFFFF;
+static unsigned short int actualCrc16Res = 0;
 static unsigned short int actualChecksumRes;
 static unsigned int recvCrc32Res;
 static unsigned short int recvCrc16Res;
@@ -68,7 +68,7 @@ bool HandleData()
 	ResultData.crc16 = SUCCES;
 	ResultData.crc32 = SUCCES;
 	initBuff(&checkBuff);
-	
+	byte temp[3] = { '1', '1', '\0' };
 
 	while ((res = Receive(socketServer, (char*)&buff, CHUNK_SIZE)) == SUCCES)
 	{
@@ -77,10 +77,14 @@ bool HandleData()
 
 		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
 		{
-			actualCrc16Res ^= calcCRC(&writebuff, actualCrc16Res, CRC16POLY);
-			actualCrc32Res ^= calcCRC(&writebuff, actualCrc32Res, CRC32POLY);
+			//actualCrc16Res = calcCRC16(&writebuff, actualCrc16Res);
+			//actualCrc32Res = calcCRC32(&writebuff, actualCrc32Res);
+			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, 16);
+			actualCrc32Res = calcCRC(&writebuff, actualCrc32Res, 32);
 			checkSumWIP += calcChecksum(&writebuff, numBytes);
-			
+			printf("16: %hu 32: %u\n", actualCrc16Res, actualCrc32Res);
+			temp[0] = writebuff[0];
+			temp[1] = writebuff[1];
 			//save data to disk:
 			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
 			ResultData.written += bytesWritten;
@@ -101,9 +105,13 @@ bool HandleData()
 		printf("can't shutdown RECEIVE channel\n");
 	}
 	actualChecksumRes = closeCheckSum(checkSumWIP);
-
+	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
 	// get crc32, crc16 and checkSum value from the buffer and verify
+	//for (int i = 0; i<8; i++) printf("%.2x ", checkBuff.buff[i]);
+	//printf("\n");
 	reOrderBuff(&checkBuff);
+	//for (int i = 0; i<8; i++) printf("%.2x ", checkBuff.buff[i]);
+	//printf("\n");
 	recvCrc32Res = (checkBuff.buff[0] << 24) + (checkBuff.buff[1] << 16) + (checkBuff.buff[2] << 8) + checkBuff.buff[3];
 	recvCrc16Res = (checkBuff.buff[4] << 8) + checkBuff.buff[5];
 	recvChecksumRes = (checkBuff.buff[6] << 8) + checkBuff.buff[7];

@@ -1,21 +1,51 @@
 #include "Common.h"
 
-unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, unsigned int polynom)
+
+unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, int size)
 {
 	int i, j;
-
+	unsigned int poly = size == 16 ? CRC16POLY : CRC32POLY;
 	for (i = 0; i < CHUNK_SIZE; i++)
 	{
-		crc ^= chunkBuffer[i];
+		crc ^= chunkBuffer[i] << (size - 8);
 		for (j = 0; j < 8; j++)
 		{
-			if (crc & 1) crc ^= polynom;
-			crc >>= 1;
+			if (crc & (1 << (size - 1))) crc = (crc << 1) ^ poly;
+			else crc <<= 1;
 		}
 	}
 	return crc;
 }
 
+unsigned int calcCRC32(byte* chunkBuffer, unsigned int crc)
+{
+	int i, j;
+	for (i = 0; i < CHUNK_SIZE; i++)
+	{
+		crc ^= (chunkBuffer[i] << 24);
+		for (j = 0; j < 8; j++)
+		{
+			if (crc & (1 << 31)) crc = (crc << 1) ^ CRC32POLY;
+			else crc <<= 1;
+		}
+	}
+	return crc;
+}
+
+unsigned short int calcCRC16(byte* chunkBuffer, unsigned short int crc)
+{
+	int i, j;
+	for (i = 0; i < CHUNK_SIZE; i++)
+	{
+		crc ^= (chunkBuffer[i] << 8);
+		for (j = 0; j < 8; j++)
+		{
+			if (crc & (1 << 15)) crc = (crc << 1) ^ CRC16POLY;
+			else crc <<= 1;
+		}
+	}
+	return crc;
+}
 
 unsigned int calcChecksum(byte* chunkBuffer, int bytesNum)
 {
@@ -49,16 +79,13 @@ void initBuff(DWordBuffer* buff){
 
 void reOrderBuff(DWordBuffer* buff)
 {
-	int i = 0;
-	byte temp;
-	while (buff->idx != 0)
-	{
-		temp = buff->buff[i];
-		buff->buff[i] = buff->buff[buff->idx];
-		buff->buff[buff->idx] = temp;
+	byte temp[8];
+	int i;
+	for (i = 0; i < 8; i++){
+		temp[i] = buff->buff[buff->idx];
 		buff->idx = (buff->idx + 1) % 8;
-		i++;
 	}
+	for (i = 0; i < 8; i++) buff->buff[i] = temp[i];
 }
 
 int pushToBuff(DWordBuffer* buff, byte* inBuff, byte* outBuff, int length)

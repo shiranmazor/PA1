@@ -4,13 +4,14 @@
 
 static SOCKET socket_server;
 static FILE* inputFile;
-static unsigned int crc32Res;
-static unsigned short int crc16Res;
+static unsigned int crc32Res = 0xFFFFFFFF;
+static unsigned int c32 = 0xFFFFFFFF;
+static unsigned short int crc16Res = 0;
+static unsigned short int c16 = 0;
 static unsigned short int checksumRes;
 
 void printResults(const ResultMessage* msg)
 {
-	//char fail[4] = 'FAIL';
 	char* crc16Msg = malloc(5 * sizeof(char));
 	char* crc32Msg = malloc(5 * sizeof(char));
 	char* checksumMsg = malloc(5 * sizeof(char));
@@ -47,24 +48,33 @@ bool sendingFileData()
 	int numBytesRead = 0;
 	unsigned int checkSumWIP = 0;
 	byte fileBuff[CHUNK_SIZE], tail[8];
+	byte temp[3] = { '1', '1', '\0' };
 
 	numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	while (numBytesRead > 0)
 	{
 		//calc crc and checksum codes on fileBuff:
-		crc16Res ^= calcCRC(&fileBuff, crc16Res, CRC16POLY);
-		crc32Res ^= calcCRC(&fileBuff, crc32Res, CRC32POLY);
+		//crc16Res = calcCRC16(&fileBuff, crc16Res);
+		//crc32Res = calcCRC32(&fileBuff, crc32Res);
+		crc16Res = calcCRC(&fileBuff, crc16Res, 16);
+		crc32Res = calcCRC(&fileBuff, crc32Res, 32);
+		printf("16: %hu 32: %u\n", crc16Res, crc32Res);
+		//c16 = calcCRC(&fileBuff, c16, 16);
+		//c32 = calcCRC(&fileBuff, c32, 32);
 		checkSumWIP += calcChecksum(&fileBuff, numBytesRead);
-
+		temp[0] = fileBuff[0];
+		temp[1] = fileBuff[1];
 		//sending file buffer:
 		if (Send(socket_server, (char*)fileBuff, CHUNK_SIZE) == FAILED)
 		{
 			printf("Failed to send data to channel\n");
-			fclose(inputFile);	// TODO: proper cleanup
+			fclose(inputFile);
 			return FALSE;
 		}
 		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	}
+	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
+	//printf("16: %hu %d 0x%.4x\n16: %hu %d 0x%.4x\n32: %u %d 0x%.8x\n32: %u %d 0x%.8x\n", crc16Res, crc16Res, crc16Res, c16, c16, c16, crc32Res, crc32Res, crc32Res, c32, c32, c32);
 	checksumRes = closeCheckSum(checkSumWIP);
 
 	// insert crc32, crc16 and checkSum into a char buffer for sending
@@ -80,11 +90,11 @@ bool sendingFileData()
 	if (Send(socket_server, (char*)tail, 8) == FAILED)
 	{
 		printf("Failed to send tail to channel\n");
-		fclose(inputFile);	// TODO: proper cleanup
+		fclose(inputFile);
 		return FALSE;
 	}
 
-	fclose(inputFile);	// TODO: proper cleanup
+	fclose(inputFile);
 
 	return TRUE;
 }
