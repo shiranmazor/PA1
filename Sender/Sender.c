@@ -54,13 +54,9 @@ bool sendingFileData()
 	while (numBytesRead > 0)
 	{
 		//calc crc and checksum codes on fileBuff:
-		//crc16Res = calcCRC16(&fileBuff, crc16Res);
-		//crc32Res = calcCRC32(&fileBuff, crc32Res);
-		crc16Res = calcCRC(&fileBuff, crc16Res, 16);
-		crc32Res = calcCRC(&fileBuff, crc32Res, 32);
-		printf("16: %hu 32: %u\n", crc16Res, crc32Res);
-		//c16 = calcCRC(&fileBuff, c16, 16);
-		//c32 = calcCRC(&fileBuff, c32, 32);
+		crc16Res = calcCRC(&fileBuff, crc16Res, numBytesRead, 16);
+		crc32Res = calcCRC(&fileBuff, crc32Res, numBytesRead, 32);
+		printf("16: %hu 0x%.4x 32: %u 0x%.8x bytesnum: %d\n", crc16Res, crc16Res, crc32Res, crc32Res, numBytesRead);
 		checkSumWIP += calcChecksum(&fileBuff, numBytesRead);
 		temp[0] = fileBuff[0];
 		temp[1] = fileBuff[1];
@@ -74,7 +70,6 @@ bool sendingFileData()
 		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	}
 	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
-	//printf("16: %hu %d 0x%.4x\n16: %hu %d 0x%.4x\n32: %u %d 0x%.8x\n32: %u %d 0x%.8x\n", crc16Res, crc16Res, crc16Res, c16, c16, c16, crc32Res, crc32Res, crc32Res, c32, c32, c32);
 	checksumRes = closeCheckSum(checkSumWIP);
 
 	// insert crc32, crc16 and checkSum into a char buffer for sending

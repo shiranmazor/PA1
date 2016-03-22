@@ -1,47 +1,22 @@
 #include "Common.h"
 
 
-unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, int size)
+unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, int bytesNum, int size)
 {
 	int i, j;
 	unsigned int poly = size == 16 ? CRC16POLY : CRC32POLY;
-	for (i = 0; i < CHUNK_SIZE; i++)
+	bool p = (crc == 38802);
+	if (p) printf("claccrc got: 0x%.2x 0x%.2x\n\n", chunkBuffer[0], chunkBuffer[1]);
+	for (i = 0; i < bytesNum; i++)
 	{
 		crc ^= chunkBuffer[i] << (size - 8);
+		if (p) printf("out crc %hu %.2x\n", crc, crc);
 		for (j = 0; j < 8; j++)
 		{
+			if (p) printf("crc %hu %.2x j: %d\n", crc, crc, j);
 			if (crc & (1 << (size - 1))) crc = (crc << 1) ^ poly;
 			else crc <<= 1;
-		}
-	}
-	return crc;
-}
-
-unsigned int calcCRC32(byte* chunkBuffer, unsigned int crc)
-{
-	int i, j;
-	for (i = 0; i < CHUNK_SIZE; i++)
-	{
-		crc ^= (chunkBuffer[i] << 24);
-		for (j = 0; j < 8; j++)
-		{
-			if (crc & (1 << 31)) crc = (crc << 1) ^ CRC32POLY;
-			else crc <<= 1;
-		}
-	}
-	return crc;
-}
-
-unsigned short int calcCRC16(byte* chunkBuffer, unsigned short int crc)
-{
-	int i, j;
-	for (i = 0; i < CHUNK_SIZE; i++)
-	{
-		crc ^= (chunkBuffer[i] << 8);
-		for (j = 0; j < 8; j++)
-		{
-			if (crc & (1 << 15)) crc = (crc << 1) ^ CRC16POLY;
-			else crc <<= 1;
+			if (p) printf("crc %hu %.2x j: %d\n", crc, crc, j);
 		}
 	}
 	return crc;

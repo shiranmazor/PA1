@@ -77,12 +77,10 @@ bool HandleData()
 
 		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
 		{
-			//actualCrc16Res = calcCRC16(&writebuff, actualCrc16Res);
-			//actualCrc32Res = calcCRC32(&writebuff, actualCrc32Res);
-			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, 16);
-			actualCrc32Res = calcCRC(&writebuff, actualCrc32Res, 32);
+			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, numBytes, 16);
+			actualCrc32Res = calcCRC(&writebuff, actualCrc32Res, numBytes, 32);
 			checkSumWIP += calcChecksum(&writebuff, numBytes);
-			printf("16: %hu 32: %u\n", actualCrc16Res, actualCrc32Res);
+			printf("16: %hu 0x%.4x 32: %u 0x%.8x bytesnum: %d\n", actualCrc16Res, actualCrc16Res, actualCrc32Res, actualCrc32Res, numBytes);
 			temp[0] = writebuff[0];
 			temp[1] = writebuff[1];
 			//save data to disk:
@@ -90,6 +88,7 @@ bool HandleData()
 			ResultData.written += bytesWritten;
 		}
 	}
+	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
 	if (res == FAILED)
 		return FALSE;
 
@@ -104,14 +103,10 @@ bool HandleData()
 	{
 		printf("can't shutdown RECEIVE channel\n");
 	}
+
 	actualChecksumRes = closeCheckSum(checkSumWIP);
-	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
-	// get crc32, crc16 and checkSum value from the buffer and verify
-	//for (int i = 0; i<8; i++) printf("%.2x ", checkBuff.buff[i]);
-	//printf("\n");
+
 	reOrderBuff(&checkBuff);
-	//for (int i = 0; i<8; i++) printf("%.2x ", checkBuff.buff[i]);
-	//printf("\n");
 	recvCrc32Res = (checkBuff.buff[0] << 24) + (checkBuff.buff[1] << 16) + (checkBuff.buff[2] << 8) + checkBuff.buff[3];
 	recvCrc16Res = (checkBuff.buff[4] << 8) + checkBuff.buff[5];
 	recvChecksumRes = (checkBuff.buff[6] << 8) + checkBuff.buff[7];
