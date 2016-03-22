@@ -53,6 +53,10 @@ bool sendingFileData()
 	byte fileBuff[CHUNK_SIZE], tail[8];
 	byte temp[3] = { '1', '1', '\0' };
 
+	fseek(inputFile, 0, SEEK_END); // seek to end of file
+	printf("FILE SIZE IS %d BYTES\n", ftell(inputFile)); // get current file pointer
+	fseek(inputFile, 0, SEEK_SET);
+
 	numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	while (numBytesRead > 0)
 	{

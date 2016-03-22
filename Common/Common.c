@@ -6,7 +6,7 @@ unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, int bytesNum, int size
 	int i, j;
 	unsigned int poly = size == 16 ? CRC16POLY : CRC32POLY;
 	bool p = (crc == 38802);
-	if (p) printf("claccrc got: 0x%.2x 0x%.2x\n\n", chunkBuffer[0], chunkBuffer[1]);
+	if (p) printf("claccrc got: 0x%.2x 0x%.2x, num: %d\n\n", chunkBuffer[0], chunkBuffer[1], bytesNum);
 	for (i = 0; i < bytesNum; i++)
 	{
 		crc ^= chunkBuffer[i] << (size - 8);

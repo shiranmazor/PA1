@@ -77,7 +77,7 @@ bool HandleData()
 		int bytesWritten;
 		ResultData.received += *receivedBytes;
 
-		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, CHUNK_SIZE)) != 0)
+		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, *receivedBytes)) != 0)
 		{
 			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, numBytes, 16);
 			actualCrc32Res = calcCRC(&writebuff, actualCrc32Res, numBytes, 32);
