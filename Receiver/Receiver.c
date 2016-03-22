@@ -76,7 +76,7 @@ bool HandleData()
 	{
 		int bytesWritten;
 		ResultData.received += *receivedBytes;
-
+		if (*receivedBytes == 1) printf("got 1 byte!!\n");
 		if ((numBytes = pushToBuff(&checkBuff, buff, writebuff, *receivedBytes)) != 0)
 		{
 			actualCrc16Res = calcCRC(&writebuff, actualCrc16Res, numBytes, 16);
@@ -89,6 +89,7 @@ bool HandleData()
 			bytesWritten = fwrite((char*)&writebuff, sizeof(byte), numBytes, outputFile);
 			ResultData.written += bytesWritten;
 		}
+		if (*receivedBytes == 1) printf("got 1 byte!! bytes from buff %d\n", numBytes);
 		k = 0;
 		receivedBytes = &k;
 	}

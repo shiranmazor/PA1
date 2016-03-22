@@ -107,7 +107,7 @@ int handleSenderFile()
 		// create error in buffer - flip  chunk bytes (per bit)
 		for (i = 0; i < *bytesRec; i++)
 			ErrorBuffer[i] = flipBits(buffer[i]);
-		
+		if (*bytesRec == 1) printf("got 1 byte!!\n");
 		//sending all error chunk to receiver
 		if (Send(receiverSocket.clientSocket, (char*)&ErrorBuffer, *bytesRec) != SUCCES)
 		{
