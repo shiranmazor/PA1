@@ -51,11 +51,6 @@ bool sendingFileData()
 	int numBytesRead = 0;
 	unsigned int checkSumWIP = 0;
 	byte fileBuff[CHUNK_SIZE], tail[8];
-	byte temp[3] = { '1', '1', '\0' };
-
-	fseek(inputFile, 0, SEEK_END); // seek to end of file
-	printf("FILE SIZE IS %d BYTES\n", ftell(inputFile)); // get current file pointer
-	fseek(inputFile, 0, SEEK_SET);
 
 	numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	while (numBytesRead > 0)
@@ -63,10 +58,8 @@ bool sendingFileData()
 		//calc crc and checksum codes on fileBuff:
 		crc16Res = calcCRC(&fileBuff, crc16Res, numBytesRead, 16);
 		crc32Res = calcCRC(&fileBuff, crc32Res, numBytesRead, 32);
-		printf("16: %hu 0x%.4x 32: %u 0x%.8x bytesnum: %d\n", crc16Res, crc16Res, crc32Res, crc32Res, numBytesRead);
 		checkSumWIP += calcChecksum(&fileBuff, numBytesRead);
-		temp[0] = fileBuff[0];
-		temp[1] = fileBuff[1];
+	
 		//sending file buffer:
 		if (Send(socket_server, (char*)fileBuff, numBytesRead) == FAILED)
 		{
@@ -76,7 +69,6 @@ bool sendingFileData()
 		}
 		numBytesRead = fread(&fileBuff, sizeof(byte), CHUNK_SIZE, inputFile);
 	}
-	printf("temp: %s\n0x%.2x 0x%.2x\n\n", temp, temp[0], temp[1]);
 	checksumRes = closeCheckSum(checkSumWIP);
 
 	// insert crc32, crc16 and checkSum into a char buffer for sending

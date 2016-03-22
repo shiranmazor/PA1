@@ -43,9 +43,7 @@ Result Send(SOCKET sd, char* Buffer, int bytesLen)
 
 	while (remainingBytes > 0)
 	{
-		printf("sending len got %d remianing %d", bytesLen, remainingBytes);
-		BytesSent = send(sd, buffPtr, remainingBytes, 0);//send bytes and check if all bytes sent
-		printf(" sent %d\n", BytesSent);
+		BytesSent = send(sd, buffPtr, remainingBytes, 0); //send bytes and check if all bytes sent
 		if (BytesSent == SOCKET_ERROR)
 			return FAILED;
 		remainingBytes -= BytesSent;
@@ -65,9 +63,7 @@ Result Receive(SOCKET sd, char* OutBuffer, int BytedLeft, int* byteReceived)
 
 	while (remainingBytes > 0)
 	{
-		printf("recieving len got %d remianing %d", BytedLeft, remainingBytes);
 		BytesTransferred = recv(sd, buffPtr, remainingBytes, 0);
-		printf(" recieved %d\n", BytesTransferred);
 		if (BytesTransferred == SOCKET_ERROR)
 			return FAILED;
 		else if (BytesTransferred == 0)

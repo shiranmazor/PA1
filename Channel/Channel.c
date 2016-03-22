@@ -105,11 +105,9 @@ int handleSenderFile()
 	Result res = Receive(senderSocket.clientSocket, (char*)&buffer, CHUNK_SIZE, bytesRec);
 	while (res == SUCCES)
 	{
-		printf("Rec bytes %d\n", *bytesRec);
 		// create error in buffer - flip  chunk bytes (per bit)
 		for (i = 0; i < *bytesRec; i++)
 			ErrorBuffer[i] = flipBits(buffer[i]);
-		if (*bytesRec == 1) printf("got 1 byte!!\n");
 		//sending all error chunk to receiver
 		if (Send(receiverSocket.clientSocket, (char*)&ErrorBuffer, *bytesRec) != SUCCES)
 		{
@@ -121,7 +119,6 @@ int handleSenderFile()
 	}
 	if (res == NOT_CONNECTED && *bytesRec > 0)
 	{
-		printf("Rec bytes %d\n", *bytesRec);
 		// create error in buffer - flip  chunk bytes (per bit)
 		for (i = 0; i < *bytesRec; i++)
 			ErrorBuffer[i] = flipBits(buffer[i]);

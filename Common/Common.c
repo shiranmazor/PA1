@@ -5,18 +5,13 @@ unsigned int calcCRC(byte* chunkBuffer, unsigned int crc, int bytesNum, int size
 {
 	int i, j;
 	unsigned int poly = size == 16 ? CRC16POLY : CRC32POLY;
-	bool p = (crc == 38802);
-	if (p) printf("claccrc got: 0x%.2x 0x%.2x, num: %d\n\n", chunkBuffer[0], chunkBuffer[1], bytesNum);
 	for (i = 0; i < bytesNum; i++)
 	{
 		crc ^= chunkBuffer[i] << (size - 8);
-		if (p) printf("out crc %hu %.2x\n", crc, crc);
 		for (j = 0; j < 8; j++)
 		{
-			if (p) printf("crc %hu %.2x j: %d\n", crc, crc, j);
 			if (crc & (1 << (size - 1))) crc = (crc << 1) ^ poly;
 			else crc <<= 1;
-			if (p) printf("crc %hu %.2x j: %d\n", crc, crc, j);
 		}
 	}
 	return crc;
